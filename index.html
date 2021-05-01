@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="es">
+    <head> 
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+        <title>Online Open Source Hash Generator</title>
+	    <meta name="description" content="This is a online open source Hash Generator. MD5, SHA256, SHA512,... Check the code on GitGub"/>
+    </head>
+    <body class="container">
+        <header>
+            <h1>Online Open Source Hash Generator</h1>
+
+        </header>
+        <main>
+            <div class="input-group flex-nowrap">
+                <textarea class="form-control" id="text-input" rows="5" onkeyup=generateHashes() placeholder="Tap here the text that you want to calculate the hash"></textarea>
+                <button type="button" class="btn btn-warning" onclick="reset()" style="border-top-right-radius: 0.25em; border-bottom-right-radius: 0.25em; ">Reset</button>
+            </div>
+            <section class="mt-4" id="favourited-hashes">
+                <h2>Favourited Hashes functions</h2>
+                <section id="favourited-hashes-elements"></section>
+    
+            </section>
+            <section class="mt-5" id="hashes">
+                <h2>Hashes functions</h2>
+                <section id="hashes-elements"></section>
+            </section>
+        </main>
+        <footer class="mt-5">
+            <h3>Credits: </h3>
+            <p>Hash functions were mades <a href="https://github.com/emn178">Emn178</a></p>
+            <p>Make with love by <a href="https://github.com/pericodes">Pericodes</a></p>
+        </footer>
+    </body>
+    <script type="text/javascript" src="asserts/js/crc.js"></script>
+    <script type="text/javascript" src="asserts/js/md2.js"></script>
+    <script type="text/javascript" src="asserts/js/md4.js"></script>
+    <script type="text/javascript" src="asserts/js/md5.js"></script>
+    <script type="text/javascript" src="asserts/js/sha1.js"></script>
+    <script type="text/javascript" src="asserts/js/sha256.js"></script>
+    <script type="text/javascript" src="asserts/js/sha512.js"></script>
+    <script type="text/javascript" src="asserts/js/sha3.js"></script>
+    <script>
+        const hashTypes = [
+            {title: "crc16", id: "crc16"},
+            {title: "crc32", id: "crc32"},
+            {title: "md2", id: "md2"},
+            {title: "md4", id: "md4"},
+            {title: "md5", id: "md5"},
+            {title: "sha1", id: "sha1"},
+            {title: "sha224", id: "sha224"},
+            {title: "sha256", id: "sha256"},
+            {title: "sha384", id: "sha384"},
+            {title: "sha512", id: "sha512"},
+            {title: "sha512_224", id: "sha512_224"},
+            {title: "sha512_256", id: "sha512_256"},
+            {title: "sha3_224", id: "sha3_224"},
+            {title: "sha3_256", id: "sha3_256"},
+            {title: "sha3_384", id: "sha3_384"},
+            {title: "sha3_512", id: "sha3_512"},
+            {title: "keccak224", id: "keccak224"},
+            {title: "keccak256", id: "keccak256"},
+            {title: "keccak384", id: "keccak384"},
+            {title: "keccak512", id: "keccak512"},
+            {title: "shake128", id: "shake128"},
+            {title: "shake256", id: "shake256"},
+        ];
+
+        var favouritedHashes = localStorage.getItem('favouritedHashes') ? JSON.parse(localStorage.getItem('favouritedHashes')) : ['md5', 'sha256'];
+
+        generateHtmlElements(); 
+        function generateHashes() {
+            let text =  document.getElementById('text-input').value;
+            console.log(text);
+            hashTypes.forEach(element => {
+                document.getElementById(element.id).querySelector('textarea').value = eval(`${element.id}(text)`); 
+            });
+        }
+
+        function favourited(element) {
+            let id = element.closest('article').id;
+            if(favouritedHashes.includes(id)){
+                const index = favouritedHashes.indexOf(id);
+                if (index > -1) {
+                    favouritedHashes.splice(index, 1);
+                }
+            }else{
+                favouritedHashes.push(id);
+            }
+            
+            localStorage.setItem('favouritedHashes', JSON.stringify(favouritedHashes)); 
+            generateHtmlElements();
+        }
+
+        function generateHtmlElement(id, title, starColor) {
+            return  `
+            <article class="input-group flex-nowrap m-2" id="${id}">
+                <span class="input-group-text" id="${id}_label" style="width: 7rem;">${title}</span>
+                <textarea type="text" class="form-control" rows="1" aria-describedby="${id}_label" readonly></textarea>
+                <button type="button" class="btn btn-success" onclick="copyToClipboard(this)" style="border-top-right-radius: 0.25em; border-bottom-right-radius: 0.25em; ">Copy</button>
+                <div class="fovouriteStar" style="font-size: xx-large; color: ${starColor}; margin-left: 0.8rem; line-height: 1; cursor:pointer;" onclick="favourited(this)">★</div>
+            </article>`;
+        }
+        function generateHtmlElements() {
+            
+            let hashesElements = document.getElementById('favourited-hashes-elements'); 
+            hashesElements.innerHTML = ''; 
+            favouritedHashes.forEach(hashId => {
+                hashTypes.forEach(element => {
+                    if (element.id === hashId) {
+                        hashesElements.insertAdjacentHTML('beforeend', generateHtmlElement(element.id, element.title, 'burlywood')); 
+                        //break; 
+                    }
+                });
+            });
+            hashesElements = document.getElementById('hashes-elements'); 
+            hashesElements.innerHTML = ''; 
+            hashTypes.forEach(element => {
+                if(!favouritedHashes.includes(element.id)){
+                    hashesElements.insertAdjacentHTML('beforeend', generateHtmlElement(element.id, element.title, '#adb5bd')); 
+                }
+            })
+            generateHashes(); 
+        }
+
+        function copyToClipboard(element) {
+            document.getElementById(element.closest('article').id).querySelector('textarea').select();
+            document.execCommand("copy");
+        }
+        function reset() {
+            document.getElementById('text-input').value = '';
+            generateHashes(); 
+        }
+    </script>
+
+</html>
